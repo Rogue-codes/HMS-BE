@@ -1,5 +1,13 @@
 import Admin from "../../models/AdminModel.js";
 import { createToken } from "../../utils/SecretToken.js";
+import {
+  genMailTemplate,
+  genSuccessMailTemplate,
+  generateOTP,
+  sendEmail,
+} from "../../utils/sendEmail.js";
+import VerifyToken from "../../models/verificationToken.js";
+import { response } from "express";
 
 export const adminSignUp = async (req, res) => {
   // destructure payload coming from client side
@@ -23,6 +31,22 @@ export const adminSignUp = async (req, res) => {
       password,
     });
 
+    // genrate OTP
+    const otp = generateOTP();
+
+    const verificationToken = await VerifyToken.create({
+      owner: admin._id,
+      token: otp,
+    });
+
+    // send verification email
+    (await sendEmail()).sendMail({
+      from: "Tes-HMS@gmail.com",
+      to: admin.email,
+      subject: "Verify Your Account",
+      html: genMailTemplate(otp, admin.email),
+    });
+
     // generate token
     const token = createToken(admin._id);
 
@@ -34,11 +58,83 @@ export const adminSignUp = async (req, res) => {
 
     // send response back to client
     res.status(201).json({
-      message: "Admin created successfully",
+      status: "success",
+      message: `success`,
       admin,
     });
   } catch (error) {
     res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+export const verifyEmail = async (req, res) => {
+  // destruction request payload
+  const { userId, otp } = req.body;
+
+  try {
+    // check is all credentials exist
+    if (!userId || !otp) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "Please provide all fields",
+      });
+    }
+    // get admin
+    const validAdmin = await Admin.findById(userId);
+    // admin not found
+    if (!validAdmin) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "Admin not found",
+      });
+    }
+    // if admin is already verified.
+    if (validAdmin.isVerified) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "Admin already verified",
+      });
+    }
+    const validToken = await VerifyToken.findOne({ owner: validAdmin._id });
+    if (!validToken) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "admin not found",
+      });
+    }
+
+    // matched client OTP with the one in our db
+    const isMatched = validToken.matchToken(otp);
+    if (!isMatched) {
+      return res.status(400).json({
+        status: "Failed",
+        message: "OTP is not valid",
+      });
+    }
+    // if it matches
+    validAdmin.isVerified = true;
+    await VerifyToken.findByIdAndDelete(validToken._id);
+    await validAdmin.save();
+
+    await (
+      await sendEmail()
+    ).sendMail({
+      from: "Tes-HMS@gmail.com",
+      to: validAdmin.email,
+      subject: `Welcome  ${validAdmin.username}`,
+      html: genSuccessMailTemplate(validAdmin.email),
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Admin verified successfully",
+      validAdmin,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "Failed",
       message: error.message,
     });
   }
@@ -78,25 +174,24 @@ export const adminLogin = async (req, res) => {
   }
 };
 
-
-export const getAdmin = async(req, res) => {
+export const getAdmin = async (req, res) => {
   try {
     const admin = await Admin.findById(req.user._id);
-    if(admin) {
+    if (admin) {
       res.status(200).json({
-        status:"success",
+        status: "success",
         message: "Admin details retrieved successfully",
-        data: admin 
-      })
-    }else{
+        data: admin,
+      });
+    } else {
       res.status(404).json({
-        status:"error",
-        message: "Admin not found"
-      })
+        status: "error",
+        message: "Admin not found",
+      });
     }
   } catch (error) {
     res.status(500).json({
       message: error.message,
     });
   }
-}
+};

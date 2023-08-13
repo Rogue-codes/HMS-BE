@@ -5,6 +5,8 @@ import cors from 'cors'
 import router from "./routes/admin/AuthRoutes.js";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import PatientRoute from "./routes/patient/PatientRoute.js";
+import doctorRoute from "./routes/doctor/doctorRoute.js";
 
 dotenv.config();
 
@@ -30,6 +32,8 @@ app.get('/', (req, res) =>{
 })
 
 app.use("/api/v1/Tes-HMS/auth", router);
+app.use("/api/v1/Tes-HMS/auth", PatientRoute);
+app.use("/api/v1/Tes-HMS/auth", doctorRoute);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${Port}`);

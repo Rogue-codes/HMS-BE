@@ -18,6 +18,13 @@ const AdminSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: new Date()
+    },
+    isVerified:{
+        type: Boolean,
+        default: false
+    },
+    emailToken:{
+        type: String
     }
 })
 
