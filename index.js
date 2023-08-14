@@ -13,7 +13,7 @@ const app = express();
 
 const { Port, connection_Uri } = process.env;
 
-const port = Port;
+const port = Port || 3500;
 
 app.use(express.json());
 app.use(cookieParser())
