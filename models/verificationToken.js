@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-import { token } from "morgan";
 
 const verificationTokenSchema = new mongoose.Schema({
   owner: {
@@ -14,7 +13,7 @@ const verificationTokenSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    expires: 3600,
+    // expires: 3600,
     default: Date.now(),
   },
 });

@@ -7,7 +7,6 @@ import {
   sendEmail,
 } from "../../utils/sendEmail.js";
 import VerifyToken from "../../models/verificationToken.js";
-import { response } from "express";
 
 export const adminSignUp = async (req, res) => {
   // destructure payload coming from client side
@@ -59,8 +58,13 @@ export const adminSignUp = async (req, res) => {
     // send response back to client
     res.status(201).json({
       status: "success",
-      message: `success`,
-      admin,
+      message: `Regisration successful`,
+      data:{
+        username: admin.username,
+        email: admin.email,
+        id: admin._id,
+        isVerified: admin.isVerified
+      }
     });
   } catch (error) {
     res.status(500).json({
@@ -74,7 +78,7 @@ export const verifyEmail = async (req, res) => {
   const { userId, otp } = req.body;
 
   try {
-    // check is all credentials exist
+    // check if all credentials exist
     if (!userId || !otp) {
       return res.status(400).json({
         status: "Failed",
@@ -130,7 +134,12 @@ export const verifyEmail = async (req, res) => {
     res.status(200).json({
       status: "success",
       message: "Admin verified successfully",
-      validAdmin,
+      data: {
+        username: validAdmin.username,
+        email: validAdmin.email,
+        id: validAdmin._id,
+        isVerified: validAdmin.isVerified
+      },
     });
   } catch (error) {
     res.status(500).json({

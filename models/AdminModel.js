@@ -22,9 +22,6 @@ const AdminSchema = new mongoose.Schema({
     isVerified:{
         type: Boolean,
         default: false
-    },
-    emailToken:{
-        type: String
     }
 })
 
