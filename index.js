@@ -19,11 +19,7 @@ app.use(express.json());
 app.use(cookieParser())
 app.use(morgan("dev"))
 app.use(
-  cors({
-    origin: ["https://hms-tes.vercel.app/"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  })
+  cors()
 );
 
 app.get('/', (req, res) =>{
