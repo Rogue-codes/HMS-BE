@@ -171,7 +171,11 @@ export const adminLogin = async (req, res) => {
       // send response back to client
       res.status(200).json({
         message: "Admin logged in successfully",
-        admin: validEmail,
+        data: {
+          username:validEmail.username,
+          email:validEmail.email,
+          isVerified: validEmail.isVerified
+        },
       });
     } else {
       res.status(404).json({ message: "Invalid credentials" });
