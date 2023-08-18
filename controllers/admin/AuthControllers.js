@@ -49,12 +49,6 @@ export const adminSignUp = async (req, res) => {
     // generate token
     const token = createToken(admin._id);
 
-    // store token in cookie
-    res.cookie("token", token, {
-      withCredentials: true,
-      httpOnly: false,
-    });
-
     // send response back to client
     res.status(201).json({
       status: "success",
@@ -64,7 +58,8 @@ export const adminSignUp = async (req, res) => {
         email: admin.email,
         id: admin._id,
         isVerified: admin.isVerified
-      }
+      },
+      token
     });
   } catch (error) {
     res.status(500).json({
@@ -162,11 +157,6 @@ export const adminLogin = async (req, res) => {
       // generate token
       const token = createToken(validEmail._id);
 
-      // store token in cookie
-      res.cookie("token", token, {
-        withCredentials: true,
-        httpOnly: false,
-      });
 
       // send response back to client
       res.status(200).json({
@@ -176,6 +166,7 @@ export const adminLogin = async (req, res) => {
           email:validEmail.email,
           isVerified: validEmail.isVerified
         },
+        token,
       });
     } else {
       res.status(404).json({ message: "Invalid credentials" });
