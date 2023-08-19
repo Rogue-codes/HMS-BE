@@ -1,5 +1,6 @@
 import Patient from "../../models/PatientModel.js";
 
+// admit patient
 export const admitPatient = async (req, res) => {
   const { patientName, age, blood_group, phone_number, email, gender } =
     req.body;
@@ -33,6 +34,7 @@ export const admitPatient = async (req, res) => {
   }
 };
 
+// get all patients
 export const getAllPatient = async (req, res) => {
   try {
     const allPatient = await Patient.find();
@@ -49,6 +51,7 @@ export const getAllPatient = async (req, res) => {
   }
 };
 
+// get patient by ID
 export const getPatient = async (req, res) => {
   const { id } = req.params;
   try {
@@ -79,6 +82,7 @@ export const getPatient = async (req, res) => {
   }
 };
 
+// update Patient
 export const editPatient = async (req, res) => {
   const { id } = req.params;
   const { patientName, age, blood_group, phone_number, email, gender } =
@@ -139,10 +143,11 @@ export const editPatient = async (req, res) => {
   }
 };
 
+// delete patient
 export const deletePatient = async (req, res) => {
-  // const { id } = req.params;
+  const { id } = req.params;
   try {
-    if (!req.params.id) {
+    if (!id) {
       return res.status(400).json({
         status: "failed",
         message: "Patient id is required",
