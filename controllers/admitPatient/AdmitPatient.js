@@ -37,11 +37,34 @@ export const admitPatient = async (req, res) => {
 // get all patients
 export const getAllPatient = async (req, res) => {
   try {
-    const allPatient = await Patient.find();
+    let query = Patient.find();
+    if(!req.query.sort){
+      query = query.sort('-createdAt')
+    }
+    // pagination
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 5
+    const skip = (page - 1) * limit
+    query = query.skip(skip).limit(limit)
+
+    
+    const patientCount = await Patient.countDocuments()
+    const last_page = patientCount/limit
+    if (req.query.page) {
+      if (skip >= patientCount) throw new Error("This page does not exist");
+    }
+
+    const allPatient = await query.select('-__v')
     res.status(200).json({
       status: "success",
       message: "All Patient",
       data: allPatient,
+      meta:{
+        per_page : limit,
+        current_page : page,
+        last_page: Math.ceil(last_page),
+        total: patientCount
+      }
     });
   } catch (error) {
     res.status(500).json({
