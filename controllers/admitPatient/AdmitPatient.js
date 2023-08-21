@@ -38,33 +38,32 @@ export const admitPatient = async (req, res) => {
 export const getAllPatient = async (req, res) => {
   try {
     let query = Patient.find();
-    if(!req.query.sort){
-      query = query.sort('-createdAt')
+    if (!req.query.sort) {
+      query = query.sort("-createdAt");
     }
     // pagination
     const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 5
-    const skip = (page - 1) * limit
-    query = query.skip(skip).limit(limit)
+    const limit = req.query.limit * 1 || 10;
+    const skip = (page - 1) * limit;
+    query = query.skip(skip).limit(limit);
 
-    
-    const patientCount = await Patient.countDocuments()
-    const last_page = patientCount/limit
+    const patientCount = await Patient.countDocuments();
+    const last_page = patientCount / limit;
     if (req.query.page) {
       if (skip >= patientCount) throw new Error("This page does not exist");
     }
 
-    const allPatient = await query.select('-__v')
+    const allPatient = await query.select("-__v");
     res.status(200).json({
       status: "success",
       message: "All Patient",
       data: allPatient,
-      meta:{
-        per_page : limit,
-        current_page : page,
+      meta: {
+        per_page: limit,
+        current_page: page,
         last_page: Math.ceil(last_page),
-        total: patientCount
-      }
+        total: patientCount,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -101,6 +100,39 @@ export const getPatient = async (req, res) => {
     res.status(500).json({
       status: "failed",
       message: error.message,
+    });
+  }
+};
+
+export const getPatientBySearch = async (req, res) => {
+  const {title} = req.params;
+
+  try {
+    if (!title) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Empty search query",
+      });
+    }
+    
+    const searchResult = await Patient.find({ patientName: new RegExp(title, "i") }).select("-__v");
+
+    if (searchResult.length === 0) {
+      return res.status(404).json({
+        status: "failed",
+        message: "Patient not found",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Search result retrieved...",
+      data: searchResult,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "failed",
+      message: "Error processing request",
     });
   }
 };
