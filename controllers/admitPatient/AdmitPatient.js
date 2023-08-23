@@ -53,6 +53,12 @@ export const getAllPatient = async (req, res) => {
       if (skip >= patientCount) throw new Error("This page does not exist");
     }
 
+    // search
+    if (req.query.search) {
+      query = query.find({ patientName: new RegExp(req.query.search, "i") });
+      console.log(req.query);
+    }
+
     const allPatient = await query.select("-__v");
     res.status(200).json({
       status: "success",
@@ -105,7 +111,7 @@ export const getPatient = async (req, res) => {
 };
 
 export const getPatientBySearch = async (req, res) => {
-  const {title} = req.params;
+  const { title } = req.params;
 
   try {
     if (!title) {
@@ -114,8 +120,10 @@ export const getPatientBySearch = async (req, res) => {
         message: "Empty search query",
       });
     }
-    
-    const searchResult = await Patient.find({ patientName: new RegExp(title, "i") }).select("-__v");
+
+    const searchResult = await Patient.find({
+      patientName: new RegExp(title, "i"),
+    }).select("-__v");
 
     if (searchResult.length === 0) {
       return res.status(404).json({
